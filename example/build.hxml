@@ -1,4 +1,3 @@
-# -lib hx-ai-framework-webapp-stack
 -lib spilehx-core
 -lib spilehx-resource-bundler
 -cp src
