@@ -1,0 +1,5 @@
+.vscode/
+example/bin/
+example/build/
+example/.temp_bundle_cache
+example/.gitignore

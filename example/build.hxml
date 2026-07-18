@@ -1,0 +1,23 @@
+# -lib hx-ai-framework-webapp-stack
+-lib spilehx-core
+-lib spilehx-resource-bundler
+-cp src
+
+## you can set a custom asset folder path by setting the environment variable "assetFolderPath" 
+## By default it will look for a folder called "projectResources" in the project root.
+# -D assetFolderPath=./projectResources
+
+
+## this line will trigger the bundling of resources in to the project output bin.
+## It will only bundle the resources if they have changed since the last build.
+## Note: a .temp_bundle_cache folder will be created in the project root to store the last build state of the resources, this can be ignored. The code will add this to the .gitignore file if it is not already there.
+--macro spilehx.projectmanagement.resourcebundler.ResourceBundler.bundleResources()
+
+
+## normal build stuff
+-main Main
+-cpp build
+
+## Move binary to bin folder just to make it more clear
+--next 
+--cmd mkdir -p ./bin && find ./build -maxdepth 1 -type f ! -name "*.*" -exec mv -t ./bin -- {} +

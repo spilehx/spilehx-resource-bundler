@@ -1,0 +1,14 @@
+{
+  "name": "spilehx-resource-bundler",
+  "url": "https://github.com/spilehx/spilehx-resource-bundler",
+  "license": "MIT",
+  "tags": ["haxe", "framework", "utils"],
+  "description": "Resource bundler library for spilehx framework c++ projects",
+  "version": "0.0.1",
+  "classPath": "/src",
+  "contributors": ["spilehx"],
+  "releasenote": "",
+  "dependencies": {
+    "spilehx-core": ""
+  }
+}
