@@ -4,6 +4,7 @@ import haxe.Json;
 #if macro
 import spilehx.core.macrotools.MacroTools;
 import spilehx.core.projectmanagement.FolderFingerprint;
+import spilehx.core.logging.Log;
 #end
 import haxe.format.JsonPrinter;
 import Date;
@@ -11,6 +12,8 @@ import spilehx.core.projectmanagement.Archive;
 import sys.FileSystem;
 import sys.io.File;
 import sys.FileStat;
+import spilehx.core.logging.GlobalLogger;
+import spilehx.core.logging.GlobalLogger.*;
 
 class ResourceBundler {
 	private static var ENV_KEY_bundledFolderPath:String = "outputBundleFolderPath";
@@ -26,7 +29,7 @@ class ResourceBundler {
 
 	#if macro
 	public static macro function bundleResources():haxe.macro.Expr {
-		Sys.println("SpileHX: Packaging runtime resources...");
+		Log.compileTimeLog("SpileHX: Packaging runtime resources...");
 		var assetFolderPath = MacroTools.getEnvVar(ENV_KEY_assetFolderPath, ENV_DEFAULT_assetFolderPath);
 		var outputFolderPath = tempOutputFolderPath;
 		var manifestFilePath = outputFolderPath + "/" + MANIFEST_FILE_NAME;
@@ -34,14 +37,14 @@ class ResourceBundler {
 		// ensure basic setup
 		MacroTools.ensureProjectFolder(assetFolderPath);
 		MacroTools.ensureProjectFolder(outputFolderPath);
-		MacroTools.ensureGitIgnoreEntry(outputFolderPath);
+		spilehx.core.macrotools.projectsetup.ProjectConfigEntry.createGitIgnoreEntry(outputFolderPath);
 
 		// Proceed with packaging
 		var folderFingerprint = FolderFingerprint.fingerprint(assetFolderPath);
 		var currentFingerprint = getCurrentBundleFingerPrint(manifestFilePath);
 
 		if (currentFingerprint == folderFingerprint) {
-			Sys.println("No changes detected. Skipping packaging.");
+			Log.compileTimeLog("No changes detected. Skipping packaging.");
 
 			// no new but bundle anyway to ensure the resources are bundled in the current build
 			addBundledResource(outputFolderPath);
@@ -49,7 +52,7 @@ class ResourceBundler {
 			return macro {};
 		}
 
-		Sys.println("Changes detected!! Proceeding with packaging.");
+		Log.compileTimeLog("Changes detected!! Proceeding with packaging.");
 
 		var currentDate = Date.now();
 		var epochTime = Std.int(currentDate.getTime() / 1000);
@@ -64,7 +67,7 @@ class ResourceBundler {
 		writeBundleManifestFile(jsonObject, manifestFilePath);
 
 		Archive.createArchive(assetFolderPath, outputFolderPath, ARCHIVE_FILE_NAME, function() {
-			Sys.println("Archive created successfully.");
+			Log.compileTimeLog("Archive created successfully.");
 			addBundledResource(outputFolderPath);
 		});
 
@@ -92,7 +95,7 @@ class ResourceBundler {
 	}
 
 	private static function addBundledResource(outputFolderPath:String):Void {
-		Sys.println("Adding bundled resources to the build...");
+		Log.compileTimeLog("Adding bundled resources to the build...");
 		for (name in BUNDLED_FILES) {
 			var filePath:String = outputFolderPath + "/" + name;
 
@@ -112,10 +115,10 @@ class ResourceBundler {
 		var currentManifestFingerprint:String = getCurrentLocalBundleFingerPrint(manifestFilePath);
 		var bundledManifestFingerprint = getBundledManifest().fingerprint;
 		if (currentManifestFingerprint != bundledManifestFingerprint) {
-			Sys.println("Bundled resources are outdated or missing. Extracting bundled resources...");
+			USER_MESSAGE_INFO("Bundled resources are outdated or missing. Extracting bundled resources...");
 			ensureBundledFileSystem(targetFolderPath);
 		} else {
-			Sys.println("Bundled resources are up-to-date. No extraction needed.");
+			USER_MESSAGE_INFO("Bundled resources are up-to-date. No extraction needed.");
 		}
 	}
 
@@ -124,7 +127,7 @@ class ResourceBundler {
 			try {
 				FileSystem.createDirectory(targetFolderPath);
 			} catch (e:Dynamic) {
-				Sys.println("Failed to create directory: " + targetFolderPath + ". Error: " + Std.string(e));
+				USER_MESSAGE_ERROR("Failed to create directory: " + targetFolderPath + ". Error: " + Std.string(e));
 				throw "Failed to create directory: " + targetFolderPath;
 			}
 		}
@@ -136,7 +139,7 @@ class ResourceBundler {
 		File.saveBytes(targetFolderPath + "/" + ARCHIVE_FILE_NAME, resourceBytes);
 
 		Archive.extractArchive(targetFolderPath + "/" + ARCHIVE_FILE_NAME, targetFolderPath, function() {
-			Sys.println("Bundled file system ensured at: " + targetFolderPath);
+			USER_MESSAGE_INFO("Bundled file system ensured at: " + targetFolderPath);
 
 			// Cleanup
 
@@ -145,7 +148,7 @@ class ResourceBundler {
 				try {
 					FileSystem.deleteFile(archiveFilePath);
 				} catch (e:Dynamic) {
-					Sys.println("Failed to delete archive file: " + archiveFilePath + ". Error: " + Std.string(e));
+					USER_MESSAGE_ERROR("Failed to delete archive file: " + archiveFilePath + ". Error: " + Std.string(e));
 					throw "Failed to delete archive file: " + archiveFilePath;
 				}
 			}
@@ -154,7 +157,7 @@ class ResourceBundler {
 
 	private static function getCurrentLocalBundleFingerPrint(manifestFilePath:String):String {
 		if (!FileSystem.exists(manifestFilePath)) {
-			Sys.println("Manifest file does not exist at: " + manifestFilePath);
+			USER_MESSAGE_ERROR("Manifest file does not exist at: " + manifestFilePath);
 			return "";
 		}
 
