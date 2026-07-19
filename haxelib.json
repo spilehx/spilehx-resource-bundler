@@ -11,13 +11,13 @@
     "framework"
   ],
   "description": "Resource bundler library for spilehx framework c++ projects",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "classPath": "src",
   "contributors": [
     "spilehx"
   ],
-  "releasenote": "Initial public release.",
+   "releasenote": "Added internal logging system and improved error handling.",
   "dependencies": {
-    "spilehx-core": ""
+    "spilehx-core": "0.0.2"
   }
 }
