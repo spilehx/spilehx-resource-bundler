@@ -31,13 +31,15 @@ class ResourceBundler {
 	public static macro function bundleResources():haxe.macro.Expr {
 		Log.compileTimeLog("SpileHX: Packaging runtime resources...");
 		var assetFolderPath = MacroTools.getEnvVar(ENV_KEY_assetFolderPath, ENV_DEFAULT_assetFolderPath);
-		var outputFolderPath = tempOutputFolderPath;
-		var manifestFilePath = outputFolderPath + "/" + MANIFEST_FILE_NAME;
+			var outputFolderPath = tempOutputFolderPath;
+			var manifestFilePath = outputFolderPath + "/" + MANIFEST_FILE_NAME;
 
-		// ensure basic setup
-		MacroTools.ensureProjectFolder(assetFolderPath);
-		MacroTools.ensureProjectFolder(outputFolderPath);
-		spilehx.core.macrotools.projectsetup.ProjectConfigEntry.createGitIgnoreEntry(outputFolderPath);
+			// ensure basic setup
+			MacroTools.ensureProjectFolder(assetFolderPath);
+			MacroTools.ensureProjectFolder(outputFolderPath);
+
+			var projectPath = MacroTools.validateProjectPath(".");
+			spilehx.core.projectsetup.ProjectConfigEntry.createGitIgnoreEntry(outputFolderPath, projectPath);
 
 		// Proceed with packaging
 		var folderFingerprint = FolderFingerprint.fingerprint(assetFolderPath);
